@@ -1,6 +1,8 @@
 import { NextAuthOptions } from 'next-auth';
 import NextAuth from 'next-auth/next';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { jwtDecode } from 'jwt-decode';
+import { ITokenPayload } from '@/types/auth';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -20,7 +22,13 @@ export const authOptions: NextAuthOptions = {
         },
       },
 
-      // sign in function
+      /**
+       * Custom sign-in function to validate user credentials against your backend API.
+       *
+       * @param credentials - The login credentials (email and password) entered by the user.
+       * @param req - The Next.js request object.
+       * @returns A user object with token information if successful, null otherwise.
+       */
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
@@ -30,7 +38,6 @@ export const authOptions: NextAuthOptions = {
 
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         const port = process.env.NEXT_PUBLIC_API_PORT;
-
         // TODO
         const res = await fetch(`${baseUrl}:${port}/auth/signin`, {
           method: 'POST',
@@ -40,7 +47,7 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        // authentication failed
+        // Handle authentication failure
         if (res.status !== 201) {
           console.log(res.statusText);
           return null;
@@ -51,6 +58,28 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  /**
+   * Callbacks are asynchronous functions you can use to control
+   * what happens when an action is performed.
+   */
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        return { ...user, ...token };
+      }
+      return token;
+    },
+
+    async session({ token, session }) {
+      // decode access token and add decoded data to session
+      const decoded = jwtDecode<ITokenPayload>(token.accessToken);
+      session.user = decoded;
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+
+      return session;
+    },
+  },
 };
 
 const handler = NextAuth(authOptions);
