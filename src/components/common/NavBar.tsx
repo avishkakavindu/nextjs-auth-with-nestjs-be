@@ -73,7 +73,9 @@ const NavBar = () => {
         </div>
         {session?.user && (
           <div>
-            <h3 className='mr-2'>{session.user.email}</h3>
+            <Link href={`/user/${session.user?.id}`}>
+              <h3 className='mr-2'>{session.user.email}</h3>
+            </Link>
           </div>
         )}
         {session?.user ? (

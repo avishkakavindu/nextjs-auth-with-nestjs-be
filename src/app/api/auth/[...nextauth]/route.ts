@@ -5,6 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import { ITokenPayload } from '@/types/auth';
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.JWT_ACCESS_SECRET,
   providers: [
     // next auth will create signin page from following
     CredentialsProvider({
