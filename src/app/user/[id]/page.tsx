@@ -1,7 +1,6 @@
 import React from 'react';
-import { getServerSession } from 'next-auth';
 
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import useAxiosAuth from '@/lib/hooks/useAxiosAuth';
 
 interface IUserProps {
   params: {
@@ -12,19 +11,16 @@ interface IUserProps {
 const UserPage = async (props: IUserProps) => {
   const { params } = props;
 
-  const session = await getServerSession(authOptions);
+  const axiosInstance = useAxiosAuth();
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}:${process.env.NEXT_PUBLIC_API_PORT}/users/${params?.id}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session?.accessToken}`,
-      },
-    }
-  );
-  const user = await res.json();
+  const res = await axiosInstance.get(`/users/${params?.id}`);
+  let user = null;
+
+  if (res?.data) {
+    user = res.data;
+  } else {
+    return <div>User not found</div>;
+  }
 
   return (
     <div className='flex justify-center items-center h-screen bg-gray-100'>
@@ -43,6 +39,7 @@ const UserPage = async (props: IUserProps) => {
           <div>
             <strong>Email:</strong> {user.email}
           </div>
+
           {/* <button
               className='bg-slate-700 p-3 w-full rounded-lg text text-white'
               onClick={handleEdit}

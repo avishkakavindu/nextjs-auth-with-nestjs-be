@@ -4,21 +4,19 @@ import React from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { z } from 'zod';
 
+import { TSignInSchema } from '@/types/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signUpSchema } from '@/lib/validations/auth';
-
-type TSignUpSchema = z.infer<typeof signUpSchema>;
+import { signInSchema } from '@/lib/validations/auth';
 
 const SignUp = () => {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<TSignUpSchema>({ resolver: zodResolver(signUpSchema) });
+  } = useForm<TSignInSchema>({ resolver: zodResolver(signInSchema) });
 
-  const handleSignUp = async (signUpData: TSignUpSchema) => {
+  const handleSignUp = async (signUpData: TSignInSchema) => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}:${process.env.NEXT_PUBLIC_API_PORT}/auth/signup`,
       {
@@ -39,43 +37,13 @@ const SignUp = () => {
 
   return (
     <div className='p-3 max-w-lg mx-auto text-black'>
-      <h1 className='text-3xl text-center font-semibold my-7'>Sign Up</h1>
+      <h1 className='text-3xl text-center font-semibold my-7'>Sign In</h1>
 
       <form
         onSubmit={handleSubmit(handleSignUp)}
         className='flex flex-col form gap-4'
         noValidate
       >
-        <div className='flex flex-col'>
-          <input
-            {...register('firstName', { required: 'First name is required' })}
-            type='text'
-            placeholder='First Name'
-            className='input bg-slate-100'
-          />
-
-          {errors?.firstName && (
-            <div className='ml-auto'>
-              <span className='error'>{errors.firstName?.message}</span>
-            </div>
-          )}
-        </div>
-
-        <div className='flex flex-col'>
-          <input
-            {...register('lastName')}
-            type='text'
-            placeholder='Last Name'
-            className='input bg-slate-100'
-          />
-
-          {errors?.lastName && (
-            <div className='ml-auto'>
-              <span className='error'>{errors.lastName?.message}</span>
-            </div>
-          )}
-        </div>
-
         <div className='flex flex-col'>
           <input
             {...register('email')}

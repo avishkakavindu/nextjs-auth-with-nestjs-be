@@ -23,3 +23,13 @@ export const signUpSchema = z.object({
       return pattern.test(password);
     }, 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one symbol'),
 });
+
+export const signInSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: 'Email is required' })
+    .email('This is not a valid email.'),
+  password: z
+    .string({ required_error: 'Password is required' })
+    .min(1, { message: 'Password is required' }),
+});

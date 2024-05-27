@@ -3,6 +3,7 @@ import NextAuth from 'next-auth/next';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { jwtDecode } from 'jwt-decode';
 import { ITokenPayload } from '@/types/auth';
+import { signIn } from '@/services/auth.services';
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.JWT_ACCESS_SECRET,
@@ -37,25 +38,14 @@ export const authOptions: NextAuthOptions = {
 
         const { email, password } = credentials;
 
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-        const port = process.env.NEXT_PUBLIC_API_PORT;
-        // TODO
-        const res = await fetch(`${baseUrl}:${port}/auth/signin`, {
-          method: 'POST',
-          body: JSON.stringify({ email, password }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const res = await signIn({ email, password });
 
-        // Handle authentication failure
-        if (res.status !== 201) {
-          console.log(res.statusText);
-          return null;
+        const tokens = await res.data;
+
+        if (tokens) {
+          return tokens;
         }
-
-        const tokens = await res.json();
-        return tokens;
+        return null;
       },
     }),
   ],
